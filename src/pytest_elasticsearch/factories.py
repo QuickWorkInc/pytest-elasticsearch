@@ -133,7 +133,7 @@ def elasticsearch_proc(
 
 
 def elasticsearch_noproc(
-    host: Optional[str] = None, port: Optional[int] = None, schema: Optional[str] = "http"
+    host: Optional[str] = None, port: Optional[int] = None, scheme: Optional[str] = "http"
 ) -> Generator[NoopElasticsearch, Any, None]:
     """
     Elasticsearch noprocess factory.
@@ -157,7 +157,7 @@ def elasticsearch_noproc(
         pg_host = host or config["host"]
         pg_port = port or config["port"] or 9300
 
-        noop_exec = NoopElasticsearch(host=pg_host, port=pg_port, schema=schema)
+        noop_exec = NoopElasticsearch(host=pg_host, port=pg_port, scheme=scheme)
 
         yield noop_exec
 
