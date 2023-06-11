@@ -10,7 +10,7 @@ from pkg_resources import parse_version
 class NoopElasticsearch:  # pylint:disable=too-few-public-methods
     """No operation Elasticsearch executor mock."""
 
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int, schema: str = "http"):
         """
         Initialize Elasticsearch executor mock
         :param str host: hostname under which elasticsearch is available
@@ -18,6 +18,7 @@ class NoopElasticsearch:  # pylint:disable=too-few-public-methods
         """
         self.host = host
         self.port = port
+        self.schema = schema
 
     @staticmethod
     def running():

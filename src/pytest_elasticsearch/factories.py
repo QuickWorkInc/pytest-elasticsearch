@@ -17,6 +17,7 @@
 # along with pytest-elasticsearch.  If not, see <http://www.gnu.org/licenses/>.
 """Fixture factories."""
 import shutil
+from typing import Any, Generator, Optional
 
 import pytest
 from pytest import FixtureRequest, TempPathFactory
@@ -131,7 +132,9 @@ def elasticsearch_proc(
     return elasticsearch_proc_fixture
 
 
-def elasticsearch_noproc(host=None, port=None):
+def elasticsearch_noproc(
+    host: Optional[str] = None, port: Optional[int] = None, schema: Optional[str] = "http"
+) -> Generator[NoopElasticsearch, Any, None]:
     """
     Elasticsearch noprocess factory.
 
@@ -154,14 +157,14 @@ def elasticsearch_noproc(host=None, port=None):
         pg_host = host or config["host"]
         pg_port = port or config["port"] or 9300
 
-        noop_exec = NoopElasticsearch(host=pg_host, port=pg_port)
+        noop_exec = NoopElasticsearch(host=pg_host, port=pg_port, schema=schema)
 
         yield noop_exec
 
     return elasticsearch_noproc_fixture
 
 
-def elasticsearch(process_fixture_name):
+def elasticsearch(process_fixture_name: str):
     """
     Create Elasticsearch client fixture.
 
@@ -169,18 +172,21 @@ def elasticsearch(process_fixture_name):
     """
 
     @pytest.fixture
-    def elasticsearch_fixture(request):
+    def elasticsearch_fixture(request) -> Elasticsearch:
         """Elasticsearch client fixture."""
         process = request.getfixturevalue(process_fixture_name)
         if not process.running():
             process.start()
 
-        client = Elasticsearch([{"host": process.host, "port": process.port}])
+        client = Elasticsearch(
+            [{"host": process.host, "port": process.port, "scheme": process.scheme}]
+        )
 
-        def drop_indexes():
-            client.indices.delete(index="*")
+        # NOTE: デフォルトではアスタリスク指定での削除はエラーになるため
+        # def drop_indexes():
+        #     client.indices.delete(index="*")
 
-        request.addfinalizer(drop_indexes)
+        # request.addfinalizer(drop_indexes)
 
         return client
 
